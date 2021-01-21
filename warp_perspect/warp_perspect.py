@@ -28,19 +28,25 @@ source = np.float32([[90,590], [700,590],[450,320],[390,320] ])
                   [image.shape[1]/2 + dst_size, image.shape[0] - 2*dst_size - bottom_offset], 
                   [image.shape[1]/2 - dst_size, image.shape[0] - 2*dst_size - bottom_offset],
                   ])'''
-destination = np.float32([[90,590], [700,590],[700,320],[90,320] ])
+destination = np.float32([[200,590], [600,590],[600,0],[200,0] ])
 
 warped = perspect_transform(image, source, destination)
+
+ret,thresh1 = cv2.threshold(warped,127,255,cv2.THRESH_BINARY)
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
 cv2.polylines(warped, np.int32([destination]), True, (0, 0, 255), 3)
 # Display the original image and binary               
-f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 6), sharey=True)
+f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 6), sharey=False)
 f.tight_layout()
 ax1.imshow(image)
 ax1.set_title('Original Image', fontsize=40)
 
 ax2.imshow(warped, cmap='gray')
 ax2.set_title('Result', fontsize=40)
+
+ax3.imshow(thresh1, cmap='gray')
+ax3.set_title('map', fontsize=40)
+
 plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
 plt.show() # Uncomment if running on your local machine
