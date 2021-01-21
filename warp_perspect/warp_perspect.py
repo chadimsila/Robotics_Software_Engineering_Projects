@@ -22,7 +22,7 @@ dst_size = 5
 # Set a bottom offset to account for the fact that the bottom of the image 
 # is not the position of the rover but a bit in front of it
 bottom_offset = 6
-source = np.float32([[90,590], [700,590],[450,320],[390,320] ])
+source = np.float32([[90,590], [700,590],[450,320],[360,320] ])
 '''destination = np.float32([[image.shape[1]/2 - dst_size, image.shape[0] - bottom_offset],
                   [image.shape[1]/2 + dst_size, image.shape[0] - bottom_offset],
                   [image.shape[1]/2 + dst_size, image.shape[0] - 2*dst_size - bottom_offset], 
@@ -32,7 +32,9 @@ destination = np.float32([[200,590], [600,590],[600,0],[200,0] ])
 
 warped = perspect_transform(image, source, destination)
 
-ret,thresh1 = cv2.threshold(warped,127,255,cv2.THRESH_BINARY)
+ret,thresh1 = cv2.threshold(warped,160,255,cv2.THRESH_BINARY)
+
+
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
 cv2.polylines(warped, np.int32([destination]), True, (0, 0, 255), 3)
