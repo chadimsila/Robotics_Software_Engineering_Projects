@@ -3,10 +3,12 @@ import matplotlib.image as mpimg
 import numpy as np
 import cv2
 
+
 image = mpimg.imread('larue')
 
-def perspect_transform(img, src, dst):
 
+
+def perspect_transform(img, src, dst):
     # Get transform matrix using cv2.getPerspectivTransform()
     M = cv2.getPerspectiveTransform(src, dst)
     # Warp image using cv2.warpPerspective()
@@ -15,24 +17,11 @@ def perspect_transform(img, src, dst):
     # Return the result
     return warped
 
-# Define calibration box in source (actual) and destination (desired) coordinates
-# These source and destination points are defined to warp the image
-# to a grid where each 10x10 pixel square represents 1 square meter
-dst_size = 5 
-# Set a bottom offset to account for the fact that the bottom of the image 
-# is not the position of the rover but a bit in front of it
-bottom_offset = 6
 source = np.float32([[90,590], [700,590],[450,320],[360,320] ])
-'''destination = np.float32([[image.shape[1]/2 - dst_size, image.shape[0] - bottom_offset],
-                  [image.shape[1]/2 + dst_size, image.shape[0] - bottom_offset],
-                  [image.shape[1]/2 + dst_size, image.shape[0] - 2*dst_size - bottom_offset], 
-                  [image.shape[1]/2 - dst_size, image.shape[0] - 2*dst_size - bottom_offset],
-                  ])'''
 destination = np.float32([[200,590], [600,590],[600,0],[200,0] ])
 
 warped = perspect_transform(image, source, destination)
-
-ret,thresh1 = cv2.threshold(warped,160,255,cv2.THRESH_BINARY)
+ret,thresh1 = cv2.threshold(warped,150,255,cv2.THRESH_BINARY)
 
 
 # Draw Source and destination points on images (in blue) before plotting
