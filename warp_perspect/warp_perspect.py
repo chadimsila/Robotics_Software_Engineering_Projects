@@ -9,16 +9,15 @@ image = cv2.imread('angle-example.jpg',cv2.IMREAD_GRAYSCALE)
 
 
 def perspect_transform(img, src, dst):
-    # Get transform matrix using cv2.getPerspectivTransform()
     M = cv2.getPerspectiveTransform(src, dst)
-    # Warp image using cv2.warpPerspective()
-    # keep same size as input image
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
-    # Return the result
     return warped
 '''
 source = np.float32([[90,590], [700,590],[450,320],[360,320] ])
 destination = np.float32([[200,590], [600,590],[600,0],[200,0] ])'''
+def color_thresh(warped,thresh,maxval):
+    ret,thresh1 = cv2.threshold(warped,thresh,maxval,cv2.THRESH_BINARY)
+    return thresh1
 
 dst_size = 5 
 # Set a bottom offset to account for the fact that the bottom of the image 
@@ -31,14 +30,9 @@ destination = np.float32([[image.shape[1]/2 - dst_size, image.shape[0] - bottom_
                   [image.shape[1]/2 + dst_size, image.shape[0] - 2*dst_size - bottom_offset], 
                   [image.shape[1]/2 - dst_size, image.shape[0] - 2*dst_size - bottom_offset],
                   ])
-
-
-
-
-
-
+print destination
 warped = perspect_transform(image, source, destination)
-ret,thresh1 = cv2.threshold(warped,190,255,cv2.THRESH_BINARY)
+ret,thresh1 = color_thresh(warped,190,255)
 print thresh1.nonzero()
 print thresh1.shape
 
@@ -51,6 +45,11 @@ y=np.mean(y_pixel)
 x=np.mean(x_pixel)
 alpha=math.atan2(y,x)
 print(alpha*180/math.pi)
+yaw_rad = yaw * np.pi / 180
+x_rotated = x * np.cos(yaw_rad) - ypix * np.sin(yaw_rad)
+y_rotated = x * np.sin(yaw_rad) + ypix * np.cos(yaw_rad)
+
+
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
 cv2.polylines(warped, np.int32([destination]), True, (0, 0, 255), 3)
