@@ -3,11 +3,19 @@ import matplotlib.image as mpimg
 import numpy as np
 import cv2
 import math
-
-image = cv2.imread('angle-example.jpg',cv2.IMREAD_GRAYSCALE)
-
+from matplotlib.patches import Arc
+import glob
 
 # Read in the sample image
+image = cv2.imread('angle-example.jpg',cv2.IMREAD_GRAYSCALE)
+path='IMG/*'
+img_list=glob.glob(path)
+idx=np.random.randint(0,len(img_list)-1)
+image = cv2.imread(img_list[idx],cv2.IMREAD_GRAYSCALE)
+
+
+
+
 
 
 # Rover yaw values will come as floats from 0 to 360
@@ -75,6 +83,10 @@ def pix_to_world(xpix, ypix, xpos, ypos, yaw, world_size, scale):
     # Return the result
     return x_pix_world, y_pix_world
 
+def to_polar_coords(xpix, ypix):
+    distance=math.sqrt(xpix**2+ypix**2)
+    angle=math.atan2(ypix,xpix)
+    return distance, angle
 
 source = np.float32([[14, 140], [301 ,140],[200, 96], [118, 96]])
 destination = np.float32([[ 155 , 154],
@@ -99,9 +111,7 @@ cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
 cv2.polylines(warped, np.int32([destination]), True, (0, 0, 255), 3)
 # Display the original image and binary               
 f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(24, 6), sharey=False)
-
 f.tight_layout()
-
 ax1.imshow(image)
 ax1.set_title('Original Image', fontsize=40)
 
@@ -110,17 +120,22 @@ ax2.set_title('Result', fontsize=40)
 
 ax3.imshow(thresh1, cmap='gray')
 ax3.set_title('map', fontsize=40)
+
 #Display rover_cordinates
-ax4.plot(x_pixel,y_pixel)
+ax4.plot(x_pixel,y_pixel,'.')
 ax4.set_title('map', fontsize=40)
 ax4.set_xlim(0, 160)
 ax4.set_ylim(-160, 160)
 
-arrow_length = 10
-x_arrow = arrow_length 
-y_arrow = -100
+#Display the direction angle of the robot
+arrow_length ,angle = to_polar_coords(x,y)
+steering =np.clip(angle,-math.pi/4,math.pi/4)
+angle_degree=angle*180/math.pi
+print arrow_length
+print angle_degree
 ax4.arrow(0, 0, x, y, color='red', zorder=2, head_width=10, width=2)
 ax4.arrow(0, 0, x, 0, color='red', zorder=2, head_width=10, width=2)
+
 
 # Display map to world 
 fig = plt.figure(figsize=(24, 6))
