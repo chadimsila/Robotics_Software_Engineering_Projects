@@ -32,9 +32,7 @@ def perspect_transform(img, src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
     return warped
-'''
-source = np.float32([[90,590], [700,590],[450,320],[360,320] ])
-destination = np.float32([[200,590], [600,590],[600,0],[200,0] ])'''
+
 def color_thresh(warped,thresh,maxval):
     ret,thresh1 = cv2.threshold(warped,thresh,maxval,cv2.THRESH_BINARY)
     return thresh1
@@ -85,7 +83,6 @@ destination = np.float32([[ 155 , 154],
                          [ 155 , 144]]
 )
 
-
 warped = perspect_transform(image, source, destination)
 thresh1 = color_thresh(warped,190,255)
 x_pixel,y_pixel=rover_cord(thresh1)
@@ -96,13 +93,6 @@ alpha=math.atan2(y,x)
 print(alpha*180/math.pi)
 
 world_map=np.zeros([200,200])
-
-
-
-
-
-
-
 
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
@@ -140,9 +130,6 @@ plt.ylim(0, 200)
 xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world_map.shape[0], 10)
 plt.imshow(world_map,cmap='gray')
 plt.plot(xmap,ymap,'.',color='w')
-
-
-
 
 plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
 plt.show() # Uncomment if running on your local machine'''
