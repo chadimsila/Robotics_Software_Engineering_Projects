@@ -120,6 +120,9 @@ plt.ylim(0, 200)
 
 world_map=np.zeros([200,200])
 
+map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
+mapx,mapy=map.nonzero()
+plt.plot(mapy,200-mapx,'.')
 
 for i in range(len(path_to_list)-1) :
     
@@ -135,14 +138,15 @@ for i in range(len(path_to_list)-1) :
     #steering =np.clip(angle,-math.pi/4,math.pi/4)
     angle_degree=angle*180/math.pi
     xmap,ymap=pix_to_world(x_pixel,y_pixel, df["X_Position"][i], df["Y_Position"][i], df["Yaw"][i], world_map.shape[0], 10)
-    plt.plot(xmap,ymap,'.',color='b')
+    plt.plot(mapy,200-mapx,'.')
+    plt.plot(xmap,ymap,'.',color='r',alpha=0.5)
     camera.snap()
     #plt.pause(1) # Uncomment if running on your local machine'''
     print (i)
 animation = camera.animate()
 animation.save('celluloid_minimal.gif', writer = 'imagemagick')
 
-
+plt.show()
 '''
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
