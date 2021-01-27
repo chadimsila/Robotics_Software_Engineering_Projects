@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import numpy as np
 import cv2
 import math
@@ -36,11 +36,14 @@ def perspect_transform(img, src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
     return warped
+
 '''
 def color_thresh(warped,thresh,maxval):
     ret,thresh1 = cv2.threshold(warped,thresh,maxval,cv2.THRESH_BINARY)
     return thresh1
 '''
+
+
 def color_thresh(img, rgb_thresh=(160, 160, 160)):
     # Create an array of zeros same xy size as img, but single channel
     color_select = np.zeros_like(img[:,:,0])
@@ -54,6 +57,7 @@ def color_thresh(img, rgb_thresh=(160, 160, 160)):
     color_select[above_thresh] = 1
     # Return the binary image
     return color_select
+
 
 def rover_cord(binaryimage):
     ypos, xpos = binaryimage.nonzero()
@@ -107,19 +111,24 @@ destination = np.float32([[ 155 , 154],
 
 
 
-world_map=np.zeros([200,200])
 warped = perspect_transform(image, source, destination)
 thresh1 = color_thresh(warped,rgb_thresh=(160, 160, 160))
 x_pixel,y_pixel=rover_cord(thresh1)
 y=np.mean(y_pixel)
 x=np.mean(x_pixel)
 alpha=math.atan2(y,x)
+
+
 #Display the direction angle of the robot
 arrow_length ,angle = to_polar_coords(x,y)
 #steering =np.clip(angle,-math.pi/4,math.pi/4)
 angle_degree=angle*180/math.pi
-xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world_map.shape[0], 10)
 
+
+world_map=np.zeros([200,200])
+
+
+xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world_map.shape[0], 25)
 
 
 
@@ -149,22 +158,19 @@ ax4.set_ylim(-160, 160)
 arrow_length ,angle = to_polar_coords(x,y)
 steering =np.clip(angle,-math.pi/4,math.pi/4)
 angle_degree=angle*180/math.pi
-#print arrow_length
-#print angle_degree
+
 ax4.arrow(0, 0, x, y, color='red', zorder=2, head_width=10, width=2)
 ax4.arrow(0, 0, x, 0, color='red', zorder=2, head_width=10, width=2)
+plt.show()
 
+ 
 
-# Display map to world 
+''' UNCOMMENT TO DISPLAY MAP TO WORLD 
 fig = plt.figure(figsize=(24, 6))
-plt.title('Map to World')
 plt.xlim(0, 200)
 plt.ylim(0, 200)
 xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world_map.shape[0], 10)
 plt.imshow(world_map,cmap='gray')
 plt.plot(xmap,ymap,'.',color='w')
-
-
-
 plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.5)
-plt.show() # Uncomment if running on your local machine
+plt.show() # Uncomment if running on your local machine '''

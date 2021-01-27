@@ -47,26 +47,6 @@ def rover_cord(binaryimage):
     return x_pixel,y_pixel
 
 
-# Define a function to apply a rotation to pixel positions
-def rotate_pix(xpix, ypix, yaw):
-    # TODO:
-    # Convert yaw to radians
-    yaw_rad=yaw*math.pi/180
-    # Apply a rotation
-    x_trans=math.cos(yaw_rad)*xpix-math.sin(yaw_rad)*ypix
-    y_trans=math.sin(yaw_rad)*xpix+math.cos(yaw_rad)*ypix
-    # Return the result  
-    return x_trans,y_trans
-
-# Define a function to perform a translation
-def translate_pix(xpix_rot, ypix_rot, xpos, ypos, scale): 
-    # TODO:
-    # Apply a scaling and a translation
-    x_rot=xpix_rot/scale+xpos
-    y_rot=ypix_rot/scale+ypos
-    # Return the result  
-    return x_rot,y_rot
-
 def pix_to_world(xpix, ypix, xpos, ypos, yaw, world_size, scale):
     # Apply rotation
     xpix_rot, ypix_rot = rotate_pix(xpix, ypix, yaw)
@@ -101,33 +81,29 @@ plt.ylim(0, 200)
 
 world_map=np.zeros([200,200])
 
-map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
-mapx,mapy=map.nonzero()
+#map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
+#mapx,mapy=map.nonzero()
 
 
 for i in range(len(path_to_list)) :
     path=df['Path'][i]
     image = cv2.imread(path)
-    ax1.imshow(image)
+    #ax1.imshow(image)
     image=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
     warped = perspect_transform(image, source, destination)
     thresh1 = color_thresh(warped,190,255)
     x_pixel,y_pixel=rover_cord(thresh1)
-    y=np.mean(y_pixel)
-    x=np.mean(x_pixel)
-    alpha=math.atan2(y,x)
-    #Display the direction angle of the robot
-    arrow_length ,angle = to_polar_coords(x,y)
-    #steering =np.clip(angle,-math.pi/4,math.pi/4)
-    angle_degree=angle*180/math.pi
     xmap,ymap=pix_to_world(x_pixel,y_pixel, df["X_Position"][i], df["Y_Position"][i], df["Yaw"][i], world_map.shape[0], 25)
-    ax2.plot(mapy,mapx,'.',color='c',alpha=0.5)
+    #ax2.plot(mapy,mapx,'.',color='c',alpha=0.5)
     ax2.plot(xmap,ymap,'.',color='r',alpha=0.5)
-    camera.snap()
+    #camera.snap()
     #plt.pause(1) # Uncomment if running on your local machine'''
     print (i)
+
+
 ##uncomment this if u want gif record
 #animation = camera.animate()
 #animation.save('celluloid_minimal.gif', writer = 'imagemagick')
+#video record
 anim = camera.animate(blit=False, interval=10)
 anim.save('map_to_world.mp4')
