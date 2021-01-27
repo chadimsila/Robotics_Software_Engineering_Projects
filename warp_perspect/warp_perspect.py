@@ -5,17 +5,16 @@ import math
 from matplotlib.patches import Arc
 import glob
 import pandas as pd
-from celluloid import Camera
 
-'''
+
+
 # Read in the sample image
 image1 = cv2.imread('angle-example.jpg')
-image = cv2.imread('angle-example.jpg',cv2.IMREAD_GRAYSCALE)
+image = cv2.imread('angle-example.jpg')
 path='IMG/*'
 img_list=glob.glob(path)
 idx=np.random.randint(0,len(img_list)-1)
-image = cv2.imread(img_list[idx],cv2.IMREAD_GRAYSCALE)
-
+#image = cv2.imread(image,cv2.IMREAD_GRAYSCALE)
 
 # Rover yaw values will come as floats from 0 to 360
 # Generate a random value in this range
@@ -25,39 +24,36 @@ rover_yaw = np.random.random(1)*360
 # Position values will range from 20 to 180 to 
 # avoid the edges in a 200 x 200 pixel world
 rover_xpos = np.random.random(1)*160 + 20
-#rover_ypos=190
+ #rover_ypos=190
 rover_ypos = np.random.random(1)*160 + 20
-#rover_ypos=190
-'''
+ #rover_ypos=190
+
 # Note: Since we've chosen random numbers for yaw and position, 
 # multiple run of the code will result in different outputs each time.
 
 
-df=pd.read_csv('robot_log.csv',delimiter=';',decimal='.')
-#Change path of the original dataset
-df['Path']=df['Path'].str.slice(start=16)
-path_to_list=df['Path'].tolist()
-
-'''
-class Databucket():
-    def __init__(self):
-        self.images = path_to_list  
-        self.xpos = df["X_Position"].values
-        self.ypos = df["Y_Position"].values
-        self.yaw = df["Yaw"].values
-        self.count = 0 # This will be a running index
-        #self.worldmap = np.zeros((200, 200, 3)).astype(np.float)
-        #self.ground_truth = ground_truth_3d # Ground truth worldmap
-data = Databucket()
-'''
 def perspect_transform(img, src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
     return warped
-
+'''
 def color_thresh(warped,thresh,maxval):
     ret,thresh1 = cv2.threshold(warped,thresh,maxval,cv2.THRESH_BINARY)
     return thresh1
+'''
+def color_thresh(img, rgb_thresh=(160, 160, 160)):
+    # Create an array of zeros same xy size as img, but single channel
+    color_select = np.zeros_like(img[:,:,0])
+    # Require that each pixel be above all three threshold values in RGB
+    # above_thresh will now contain a boolean array with "True"
+    # where threshold was met
+    above_thresh = (img[:,:,0] > rgb_thresh[0]) \
+                & (img[:,:,1] > rgb_thresh[1]) \
+                & (img[:,:,2] > rgb_thresh[2])
+    # Index the array of zeros with the boolean array and set to 1
+    color_select[above_thresh] = 1
+    # Return the binary image
+    return color_select
 
 def rover_cord(binaryimage):
     ypos, xpos = binaryimage.nonzero()
@@ -110,44 +106,24 @@ destination = np.float32([[ 155 , 154],
 )
 
 
-# Display map to world 
-#fig = plt.figure(figsize=(24, 6))
-fig = plt.figure()
-camera = Camera(fig)
-plt.title('Map to World')
-plt.xlim(0, 200)
-plt.ylim(0, 200)
 
 world_map=np.zeros([200,200])
+warped = perspect_transform(image, source, destination)
+thresh1 = color_thresh(warped,rgb_thresh=(160, 160, 160))
+x_pixel,y_pixel=rover_cord(thresh1)
+y=np.mean(y_pixel)
+x=np.mean(x_pixel)
+alpha=math.atan2(y,x)
+#Display the direction angle of the robot
+arrow_length ,angle = to_polar_coords(x,y)
+#steering =np.clip(angle,-math.pi/4,math.pi/4)
+angle_degree=angle*180/math.pi
+xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world_map.shape[0], 10)
 
-map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
-mapx,mapy=map.nonzero()
-plt.plot(mapy,200-mapx,'.')
 
-for i in range(len(path_to_list)-1) :
-    
-    image = cv2.imread(df['Path'][i],cv2.IMREAD_GRAYSCALE)
-    warped = perspect_transform(image, source, destination)
-    thresh1 = color_thresh(warped,190,255)
-    x_pixel,y_pixel=rover_cord(thresh1)
-    y=np.mean(y_pixel)
-    x=np.mean(x_pixel)
-    alpha=math.atan2(y,x)
-    #Display the direction angle of the robot
-    arrow_length ,angle = to_polar_coords(x,y)
-    #steering =np.clip(angle,-math.pi/4,math.pi/4)
-    angle_degree=angle*180/math.pi
-    xmap,ymap=pix_to_world(x_pixel,y_pixel, df["X_Position"][i], df["Y_Position"][i], df["Yaw"][i], world_map.shape[0], 10)
-    plt.plot(mapy,200-mapx,'.')
-    plt.plot(xmap,ymap,'.',color='r',alpha=0.5)
-    camera.snap()
-    #plt.pause(1) # Uncomment if running on your local machine'''
-    print (i)
-animation = camera.animate()
-animation.save('celluloid_minimal.gif', writer = 'imagemagick')
 
-plt.show()
-'''
+
+
 # Draw Source and destination points on images (in blue) before plotting
 cv2.polylines(image, np.int32([source]), True, (0, 0, 255), 3)
 cv2.polylines(warped, np.int32([destination]), True, (0, 0, 255), 3)
@@ -173,8 +149,8 @@ ax4.set_ylim(-160, 160)
 arrow_length ,angle = to_polar_coords(x,y)
 steering =np.clip(angle,-math.pi/4,math.pi/4)
 angle_degree=angle*180/math.pi
-print arrow_length
-print angle_degree
+#print arrow_length
+#print angle_degree
 ax4.arrow(0, 0, x, y, color='red', zorder=2, head_width=10, width=2)
 ax4.arrow(0, 0, x, 0, color='red', zorder=2, head_width=10, width=2)
 
@@ -188,10 +164,7 @@ xmap,ymap=pix_to_world(x_pixel,y_pixel, rover_xpos, rover_ypos, rover_yaw, world
 plt.imshow(world_map,cmap='gray')
 plt.plot(xmap,ymap,'.',color='w')
 
-fi=plt.figure(figsize=(24, 6))
-plt.imshow(process_image(image1))
 
 
-plt.subplots_adjust(left=1., right=1, top=0.9, bottom=2)
+plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.5)
 plt.show() # Uncomment if running on your local machine
-'''
