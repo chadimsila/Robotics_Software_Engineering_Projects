@@ -18,7 +18,7 @@ def perspect_transform(img, src, dst):
     M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
     return warped
-'''
+
 def color_thresh(warped,thresh,maxval):
     ret,thresh1 = cv2.threshold(warped,thresh,maxval,cv2.THRESH_BINARY)
     return thresh1
@@ -38,7 +38,7 @@ def color_thresh(img, rgb_thresh=(160, 160, 160)):
     # Return the binary image
     return color_select
 
-
+'''
 
 def rover_cord(binaryimage):
     ypos, xpos = binaryimage.nonzero()
@@ -103,12 +103,12 @@ world_map=np.zeros([200,200])
 
 map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
 mapx,mapy=map.nonzero()
-
+plt.plot(mapy,mapx,'.',color='b',alpha=0.5)
 
 for i in range(1000) :
-    image = cv2.imread(df['Path'][i])
+    image = cv2.imread(df['Path'][i],cv2.IMREAD_GRAYSCALE)
     warped = perspect_transform(image, source, destination)
-    thresh1 = color_thresh(warped,rgb_thresh=(160, 160, 160))
+    thresh1 = color_thresh(warped,190,255)
     x_pixel,y_pixel=rover_cord(thresh1)
     y=np.mean(y_pixel)
     x=np.mean(x_pixel)
@@ -118,10 +118,10 @@ for i in range(1000) :
     #steering =np.clip(angle,-math.pi/4,math.pi/4)
     angle_degree=angle*180/math.pi
     xmap,ymap=pix_to_world(x_pixel,y_pixel, df["X_Position"][i], df["Y_Position"][i], df["Yaw"][i], world_map.shape[0], 25)
-    plt.plot(mapy,mapx,'.',color='b')
     plt.plot(xmap,ymap,'.',color='r',alpha=0.5)
-    camera.snap()
+    #camera.snap()
     #plt.pause(1) # Uncomment if running on your local machine'''
     print (i)
-animation = camera.animate()
-animation.save('celluloid_minimal.gif', writer = 'imagemagick')
+#animation = camera.animate()
+#animation.save('celluloid_minimal.gif', writer = 'imagemagick')
+plt.show()
