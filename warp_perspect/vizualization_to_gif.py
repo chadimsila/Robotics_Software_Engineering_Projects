@@ -93,7 +93,7 @@ destination = np.float32([[ 155 , 154],
 
 # Display map to world 
 #fig = plt.figure(figsize=(24, 6))
-fig = plt.figure()
+fig,(ax1,ax2) = plt.subplots(1, 2, figsize=(24, 6))
 camera = Camera(fig)
 plt.title('Map to World')
 plt.xlim(0, 200)
@@ -103,10 +103,13 @@ world_map=np.zeros([200,200])
 
 map=cv2.imread('map_bw.png',cv2.IMREAD_GRAYSCALE)
 mapx,mapy=map.nonzero()
-plt.plot(mapy,mapx,'.',color='b',alpha=0.5)
 
-for i in range(1000) :
-    image = cv2.imread(df['Path'][i],cv2.IMREAD_GRAYSCALE)
+
+for i in range(len(path_to_list)) :
+    path=df['Path'][i]
+    image = cv2.imread(path)
+    ax1.imshow(image)
+    image=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
     warped = perspect_transform(image, source, destination)
     thresh1 = color_thresh(warped,190,255)
     x_pixel,y_pixel=rover_cord(thresh1)
@@ -118,10 +121,13 @@ for i in range(1000) :
     #steering =np.clip(angle,-math.pi/4,math.pi/4)
     angle_degree=angle*180/math.pi
     xmap,ymap=pix_to_world(x_pixel,y_pixel, df["X_Position"][i], df["Y_Position"][i], df["Yaw"][i], world_map.shape[0], 25)
-    plt.plot(xmap,ymap,'.',color='r',alpha=0.5)
-    #camera.snap()
+    ax2.plot(mapy,mapx,'.',color='c',alpha=0.5)
+    ax2.plot(xmap,ymap,'.',color='r',alpha=0.5)
+    camera.snap()
     #plt.pause(1) # Uncomment if running on your local machine'''
     print (i)
+##uncomment this if u want gif record
 #animation = camera.animate()
 #animation.save('celluloid_minimal.gif', writer = 'imagemagick')
-plt.show()
+anim = camera.animate(blit=False, interval=10)
+anim.save('map_to_world.mp4')
