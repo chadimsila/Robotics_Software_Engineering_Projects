@@ -24,17 +24,17 @@ pcl.save(cloud_filtered, filename)
 
 passthrough = cloud_filtered.make_passthrough_filter()
 passthrough.set_filter_field_name("z")
-passthrough.set_filter_limits(0.1, 0.8)
+passthrough.set_filter_limits(0.6, 1.1)
 # //pass.setFilterLimitsNegative (true)
-cloud_filtered2 = passthrough.filter()
+cloud_filtered = passthrough.filter()
 filename = 'passthrough_downsampled.pcd'
-pcl.save(cloud_filtered2, filename)
+pcl.save(cloud_filtered, filename)
 
 
 
 # RANSAC plane segmentation
 # Create the segmentation object
-seg = cloud_filtered2.make_segmenter()
+seg = cloud_filtered.make_segmenter()
 
 # Set the model you wish to fit 
 seg.set_model_type(pcl.SACMODEL_PLANE)
@@ -43,7 +43,7 @@ seg.set_method_type(pcl.SAC_RANSAC)
 # Max distance for a point to be considered fitting the model
 # Experiment with different values for max_distance 
 # for segmenting the table
-max_distance = 1
+max_distance = 0.01
 seg.set_distance_threshold(max_distance)
 
 # Call the segment function to obtain set of inlier indices and model coefficients
@@ -54,14 +54,30 @@ extracted_inliers = cloud_filtered.extract(inliers, negative=False)
 filename = 'extracted_inliers.pcd'
 pcl.save(extracted_inliers, filename)
 
-
+# Extract outliers
 extracted_outliers = cloud_filtered.extract(inliers, negative=True)
 filename = 'extracted_outliers.pcd'
 pcl.save(extracted_outliers, filename)
 
-# Extract outliers
-
-
 # Save pcd for tabletop objects
+
+
+#remove noise
+''' 
+# Much like the previous filters, we start by creating a filter object: 
+outlier_filter = cloud_filtered.make_statistical_outlier_filter()
+
+# Set the number of neighboring points to analyze for any given point
+outlier_filter.set_mean_k(50)
+
+# Set threshold scale factor
+x = 1.0
+
+# Any point with a mean distance larger than global (mean distance+x*std_dev) will be considered outlier
+outlier_filter.set_std_dev_mul_thresh(x)
+
+# Finally call the filter function for magic
+cloud_filtered = outlier_filter.filter()
+'''
 
 
