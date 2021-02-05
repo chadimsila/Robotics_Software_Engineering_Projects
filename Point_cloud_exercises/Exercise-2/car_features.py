@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 # for scikit-learn version <= 0.17
 # if you are using scikit-learn >= 0.18 then use this:
 # from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 
 # Define a function to compute color histogram features  
 def color_hist(img, nbins=32, bins_range=(0, 256)):
@@ -45,7 +45,7 @@ def extract_features(imgs, hist_bins=32, hist_range=(0, 256)):
 
 
 # Read in car and non-car images
-images = glob.glob('*.jpeg')
+images = glob.glob('img/*.jpeg')
 cars = []
 notcars = []
 for image in images:
