@@ -5,8 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn import cross_validation
+from sklearn import model_selection
 from sklearn import metrics
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score
 
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
@@ -47,6 +49,8 @@ for item in training_set:
         feature_list.append(item[0])
         label_list.append(item[1])
 
+
+print(label_list)
 print('Features in Training Set: {}'.format(len(training_set)))
 print('Invalid Features in Training set: {}'.format(len(training_set)-len(feature_list)))
 
@@ -55,38 +59,38 @@ X = np.array(feature_list)
 X_scaler = StandardScaler().fit(X)
 # Apply the scaler to X
 X_train = X_scaler.transform(X)
+print(X_train.shape)
 y_train = np.array(label_list)
-
+xx=X_train[20,:]
 # Convert label strings to numerical encoding
 encoder = LabelEncoder()
 y_train = encoder.fit_transform(y_train)
-
 # Create classifier
 clf = svm.SVC(kernel='linear')
-
+clf.fit(X_train,y_train)
 # Set up 5-fold cross-validation
-kf = cross_validation.KFold(len(X_train),
-                            n_folds=5,
-                            shuffle=True,
-                            random_state=1)
+kf = model_selection.KFold(n_splits=5,random_state=1,shuffle=True)
 
 # Perform cross-validation
-scores = cross_validation.cross_val_score(cv=kf,
+scores = model_selection.cross_val_score(cv=kf,
                                          estimator=clf,
                                          X=X_train, 
                                          y=y_train,
                                          scoring='accuracy'
                                         )
+#print(clf.predict(X_train))
 print('Scores: ' + str(scores))
 print('Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), 2*scores.std()))
 
 # Gather predictions
-predictions = cross_validation.cross_val_predict(cv=kf,
+'''predictions = model_selection.cross_val_predict(cv=kf,
                                           estimator=clf,
                                           X=X_train, 
                                           y=y_train
-                                         )
+                                         )'''
 
+predictions=clf.predict(xx.reshape(1,-1))
+print(predictions)
 accuracy_score = metrics.accuracy_score(y_train, predictions)
 print('accuracy score: '+str(accuracy_score))
 
@@ -112,5 +116,17 @@ plot_confusion_matrix(confusion_matrix, classes=encoder.classes_,
 plt.figure()
 plot_confusion_matrix(confusion_matrix, classes=encoder.classes_, normalize=True,
                       title='Normalized confusion matrix')
-
 plt.show()
+
+
+'''
+
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.10,random_state=0)
+
+svclassifier = svm.SVC(kernel='linear')
+svclassifier.fit(X_train, y_train)
+y_pred = svclassifier.predict(X_test)
+print(accuracy_score(y_test, y_pred))
+'''
